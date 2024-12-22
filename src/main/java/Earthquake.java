@@ -1,4 +1,5 @@
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Earthquake {
@@ -29,7 +30,7 @@ public class Earthquake {
 
     private LocalDateTime parseDate(String dateTimeStr) {
         if (dateTimeStr.contains("T")) {
-            return LocalDateTime.parse(dateTimeStr.replace("Z", ""));
+            return ZonedDateTime.parse(dateTimeStr).toLocalDateTime();
         }
 
         String pattern = dateTimeStr.length() == 19 ? "yyyy-MM-dd HH:mm:ss" : "yyyy-MM-dd H:mm:ss";

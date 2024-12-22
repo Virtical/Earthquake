@@ -1,4 +1,7 @@
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Database {
     public static Connection connection;
@@ -19,6 +22,16 @@ public class Database {
                 "time TIMESTAMP)");
     }
 
+    public static boolean doesTableExist(String tableName) throws SQLException {
+        String sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, tableName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
     public static void addEarthquake(Earthquake earthquake) throws SQLException {
         String sql = "INSERT INTO earthquakes (id, depth, type, magnitude, state, time) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -30,6 +43,27 @@ public class Database {
             preparedStatement.setTimestamp(6, Timestamp.valueOf(earthquake.Time));
             preparedStatement.executeUpdate();
         }
+    }
+
+    public static List<Earthquake> getAllEarthquakes() throws SQLException {
+        List<Earthquake> earthquakes = new ArrayList<>();
+        String sql = "SELECT id, depth, type, magnitude, state, time FROM earthquakes";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql); ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String id = resultSet.getString("id");
+                int depth = resultSet.getInt("depth");
+                String type = resultSet.getString("type");
+                double magnitude = resultSet.getDouble("magnitude");
+                String state = resultSet.getString("state");
+                LocalDateTime time = resultSet.getTimestamp("time").toLocalDateTime();
+
+                Earthquake earthquake = new Earthquake(id, depth, type, magnitude, state, time);
+                earthquakes.add(earthquake);
+            }
+        }
+
+        return earthquakes;
     }
 
     public static void closeDB() {
